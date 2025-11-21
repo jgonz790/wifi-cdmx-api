@@ -2,6 +2,7 @@ package com.wificdmx.wifiapi.service;
 
 import com.wificdmx.wifiapi.dto.WifiPointDTO;
 import com.wificdmx.wifiapi.dto.WifiPointResponseDTO;
+import com.wificdmx.wifiapi.exception.ResourceNotFoundException;
 import com.wificdmx.wifiapi.model.WifiPoint;
 import com.wificdmx.wifiapi.repository.WifiPointRepository;
 import lombok.RequiredArgsConstructor;
@@ -49,7 +50,7 @@ public class WifiPointService {
      *
      * @param id WiFi point ID
      * @return WiFi point DTO
-     * @throws RuntimeException if WiFi point not found
+     * @throws ResourceNotFoundException if WiFi point not found
      */
     public WifiPointDTO findById(String id) {
         log.debug("Finding WiFi point by ID: {}", id);
@@ -57,7 +58,7 @@ public class WifiPointService {
         WifiPoint wifiPoint = wifiPointRepository.findById(id)
                 .orElseThrow(() -> {
                     log.error("WiFi point not found with ID: {}", id);
-                    return new RuntimeException("WiFi point not found with ID: " + id);
+                    return new ResourceNotFoundException("WiFi point not found with ID: " + id);
                 });
 
         return convertToDTO(wifiPoint);
