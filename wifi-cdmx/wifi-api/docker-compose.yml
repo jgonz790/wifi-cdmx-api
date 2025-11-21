@@ -14,6 +14,30 @@ services:
       - postgres_data:/var/lib/postgresql/data
     networks:
       - wifi-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d wifi_cdmx"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: wifi-cdmx-api
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/wifi_cdmx
+      SPRING_DATASOURCE_USERNAME: admin
+      SPRING_DATASOURCE_PASSWORD: admin123
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+    ports:
+      - "8080:8080"
+    networks:
+      - wifi-network
+    restart: unless-stopped
 
 volumes:
   postgres_data:
