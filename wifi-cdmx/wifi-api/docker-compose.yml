@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgis/postgis:15-3.3
+    container_name: wifi-cdmx-db
+    environment:
+      POSTGRES_DB: wifi_cdmx
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin123
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - wifi-network
+
+volumes:
+  postgres_data:
+
+networks:
+  wifi-network:
+    driver: bridge
