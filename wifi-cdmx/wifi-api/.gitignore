@@ -31,3 +31,8 @@ build/
 
 ### VS Code ###
 .vscode/
+
+# Development artifacts
+.claude/
+settings.local.json
+*.local.json
