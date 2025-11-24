@@ -184,4 +184,8 @@ public class WifiPointService {
                 .last(page.isLast())
                 .build();
     }
+    public long count() {
+        return wifiPointRepository.count();
+    }
+
 }

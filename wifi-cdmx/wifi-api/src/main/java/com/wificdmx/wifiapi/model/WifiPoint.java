@@ -9,7 +9,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 
-@Entity
+@Entity   // this anotation simplify the DB operations in Spring when assign  java classes  to the tables of the DB
 @Table(name = "wifi_points")
 @Data
 @NoArgsConstructor

@@ -18,6 +18,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+import java.util.HashMap;
+
 /**
  * REST Controller for WiFi Point operations.
  * Provides endpoints for querying WiFi access points in CDMX.
@@ -173,7 +176,13 @@ public class WifiPointController {
             description = "Verifies that the API is running properly"
     )
     @ApiResponse(responseCode = "200", description = "API is healthy")
-    public ResponseEntity<String> healthCheck() {
-        return ResponseEntity.ok("WiFi CDMX API is running");
+    public ResponseEntity<Map<String, Object>> healthCheck() {
+        Map<String, Object> response = new HashMap<>();
+        response.put("status", "UP");
+        response.put("message", "WiFi CDMX API is running");
+        response.put("totalPoints", wifiPointService.count());
+        response.put("developer", "Osvaldo González");
+
+        return ResponseEntity.ok(response);
     }
 }
