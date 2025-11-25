@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
@@ -144,11 +145,11 @@ public class WifiPointController {
             @ApiResponse(
                     responseCode = "200",
                     description = "Successfully retrieved nearby WiFi points",
-                    content = @Content(schema = @Schema(implementation = WifiPointResponseDTO.class))
+                    content = @Content(schema = @Schema(implementation = Page.class))
             ),
             @ApiResponse(responseCode = "400", description = "Invalid coordinates or parameters")
     })
-    public ResponseEntity<WifiPointResponseDTO> getNearbyWifiPoints(
+    public ResponseEntity<Page<WifiPointDTO>> getNearbyWifiPoints(
             @RequestParam
             @Parameter(description = "Latitude (-90 to 90)", example = "19.4326", required = true)
             Double lat,
@@ -161,7 +162,7 @@ public class WifiPointController {
     ) {
         log.info("GET /api/v1/wifi-points/nearby?lat={}&lon={} - Page: {}, Size: {}",
                 lat, lon, pageable.getPageNumber(), pageable.getPageSize());
-        WifiPointResponseDTO response = wifiPointService.findNearby(lat, lon, pageable);
+        Page<WifiPointDTO> response = wifiPointService.findNearby(lat, lon, pageable);
         return ResponseEntity.ok(response);
     }
 

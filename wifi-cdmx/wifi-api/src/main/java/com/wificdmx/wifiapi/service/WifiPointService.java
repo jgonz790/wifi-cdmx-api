@@ -8,6 +8,7 @@ import com.wificdmx.wifiapi.repository.WifiPointRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -92,44 +93,18 @@ public class WifiPointService {
      * @param pageable Pagination parameters
      * @return Paginated response with WiFi points including distance
      */
-    public WifiPointResponseDTO findNearby(Double lat, Double lon, Pageable pageable) {
+    @Transactional(readOnly = true)
+    public Page<WifiPointDTO> findNearby(Double lat, Double lon, Pageable pageable) {
         log.debug("Finding nearby WiFi points - Lat: {}, Lon: {}, Page: {}, Size: {}",
                 lat, lon, pageable.getPageNumber(), pageable.getPageSize());
 
-        // Validate coordinates
-        if (lat == null || lon == null) {
-            throw new IllegalArgumentException("Latitude and longitude are required");
-        }
+        Page<Object[]> results = wifiPointRepository.findNearbyPoints(lat, lon, pageable);
 
-        if (lat < -90 || lat > 90) {
-            throw new IllegalArgumentException("Latitude must be between -90 and 90");
-        }
-
-        if (lon < -180 || lon > 180) {
-            throw new IllegalArgumentException("Longitude must be between -180 and 180");
-        }
-
-        int limit = pageable.getPageSize();
-        int offset = pageable.getPageNumber() * pageable.getPageSize();
-
-        List<Object[]> results = wifiPointRepository.findNearby(lat, lon, limit, offset);
-
-        List<WifiPointDTO> content = results.stream()
+        List<WifiPointDTO> dtos = results.getContent().stream()
                 .map(this::convertNearbyResultToDTO)
                 .collect(Collectors.toList());
 
-        long total = wifiPointRepository.countAll();
-        int totalPages = (int) Math.ceil((double) total / pageable.getPageSize());
-
-        return WifiPointResponseDTO.builder()
-                .content(content)
-                .totalElements((int) total)
-                .totalPages(totalPages)
-                .currentPage(pageable.getPageNumber())
-                .pageSize(content.size())
-                .first(pageable.getPageNumber() == 0)
-                .last(pageable.getPageNumber() >= totalPages - 1)
-                .build();
+        return new PageImpl<>(dtos, pageable, results.getTotalElements());
     }
 
     /**
@@ -150,7 +125,7 @@ public class WifiPointService {
 
     /**
      * Converts nearby query result (Object[]) to DTO with distance.
-     * The Object[] contains: [punto_id, programa, latitud, longitud, alcaldia, created_at, updated_at, distancia]
+     * The Object[] contains: [punto_id, programa, latitud, longitud, alcaldia, distancia]
      *
      * @param result Query result array
      * @return WifiPointDTO with distance
@@ -162,7 +137,7 @@ public class WifiPointService {
                 .latitud((Double) result[2])
                 .longitud((Double) result[3])
                 .alcaldia((String) result[4])
-                .distancia(((BigDecimal) result[7]).doubleValue())
+                .distancia(result[5] != null ? ((Number) result[5]).doubleValue() : null)
                 .build();
     }
 
@@ -184,8 +159,8 @@ public class WifiPointService {
                 .last(page.isLast())
                 .build();
     }
+
     public long count() {
         return wifiPointRepository.count();
     }
-
 }

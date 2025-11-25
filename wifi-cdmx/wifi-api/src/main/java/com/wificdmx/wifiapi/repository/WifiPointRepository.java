@@ -31,22 +31,32 @@ public interface WifiPointRepository extends JpaRepository<WifiPoint, String> {
      * @param pageable Pagination parameters
      * @return List of Object arrays containing [WifiPoint, distance]
      */
+
+    /**
+     * Finds nearby WiFi points using Haversine formula
+     * Returns WiFi points ordered by distance from the given coordinates
+     *
+     * @param lat Latitude of reference point
+     * @param lon Longitude of reference point
+     * @param pageable Pagination parameters
+     * @return Page of WifiPoint objects
+     */
     @Query(value = """
-            SELECT w.*,
-                   (6371 * acos(
-                       cos(radians(:lat)) * cos(radians(w.latitud)) *
-                       cos(radians(w.longitud) - radians(:lon)) +
-                       sin(radians(:lat)) * sin(radians(w.latitud))
-                   )) AS distancia
-            FROM wifi_points w
-            ORDER BY distancia
-            LIMIT :limit OFFSET :offset
-            """, nativeQuery = true)
-    List<Object[]> findNearby(
+        SELECT w.punto_id, w.programa, w.latitud, w.longitud, w.alcaldia,
+               (6371 * acos(
+                   cos(radians(:lat)) * cos(radians(w.latitud)) *
+                   cos(radians(w.longitud) - radians(:lon)) +
+                   sin(radians(:lat)) * sin(radians(w.latitud))
+               )) AS distancia
+        FROM wifi_points w
+        ORDER BY distancia
+        """,
+            countQuery = "SELECT count(*) FROM wifi_points",
+            nativeQuery = true)
+    Page<Object[]> findNearbyPoints(
             @Param("lat") Double lat,
             @Param("lon") Double lon,
-            @Param("limit") int limit,
-            @Param("offset") int offset
+            Pageable pageable
     );
 
     /**
